@@ -4,24 +4,41 @@ on:
     types: [created, edited]
 
 jobs:
-  update-benchmarks:
-    # if: ${{ github.event.issue.pull_request && contains(['COLLABORATOR', 'MEMBER', 'OWNER'], github.event.issue.author_association) && startsWith(github.event.issue.comment.body, "/update_benchmarks"}}
-    runs-on: [ubuntu-latest]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  benchmarks:
+    name: Update Benchmarks
+    uses: ./.github/workflows/benchmarks.yml
+    with:
+      benchmark_package_path: "Benchmarks"
+  # update-benchmarks:
+  #   # if: ${{ github.event.issue.pull_request && contains(['COLLABORATOR', 'MEMBER', 'OWNER'], github.event.issue.author_association) && startsWith(github.event.issue.comment.body, "/update_benchmarks"}}
+  #   runs-on: [ubuntu-latest]
+  #   container:
+  #     image: "swiftlang/swift:nightly-6.1-jammy"
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   steps:
+  #     - name: Install dependencies
+  #       run: |
+  #         apt-get update -y -q && apt-get install -y -q libjemalloc-dev gh
 
-      - name: Make Changes
-        run: |
-          echo "a testing change" >> testing.txt
+  #     - name: Mark the workspace as safe
+  #       run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
-      - name: Commit Changes
-        run: |
-          git config --global user.name 'benchmark-update-bot'
-          git config --global user.email '<>'
-          git add testing.txt
-          git commit -m "Test change"
-          git push origin ${BRANCH_NAME}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Checkout branch
+  #       run: |
+  #         gh pr checkout "${{ github.event.issue.html_url }}"
+  #         git config --global user.name 'benchmark-update-bot'
+  #         git config --global user.email '<>'
+
+  #     - name: Make Changes
+  #       run: |
+  #         swift package --package-path Benchmarks/ benchmark -allow-writing-to-package-directory --format metricP90AbsoluteThresholds thresholds update --path Benchmarks/Thresholds/nightly-next/
+
+  #     - name: Commit Changes
+  #       run: |
+  #         git add Benchmarks/Thresholds/
+  #         git commit -m "Update benchmark thresholds"
+  #         git push
