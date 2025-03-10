@@ -17,19 +17,12 @@ jobs:
 
       - name: Commit Changes
         run: |
-          echo "event.comment.body ${{ github.event.comment.body }}
-          echo "event.comment.issue_url ${{ github.event.comment.issue_url }}
-          echo "event.comment.id ${{ github.event.comment.id }}
-          echo "event.comment.url ${{ github.event.comment.url }}
-          echo "event.issue.comment.body ${{ github.event.issue.comment.body }}
-          echo "event.issue.html_url ${{ github.event.issue.html_url }}
-          echo "event.issue.id ${{ github.event.issue.id }}
-          echo "event.issue.number ${{ github.event.issue.number }}
-          echo "event.issue.pull_request.url ${{ github.event.issue.pull_request.url }}
-          echo "event.issue.pull_request.html_url ${{ github.event.issue.pull_request.html_url }}
-          echo "event.issue.repository_url ${{ github.event.issue.repository_url }}
-          echo "event.issue.url ${{ github.event.issue.url }}
-          echo "event.issue.pull_request.head.ref ${{ github.event.issue.pull_request.head.ref }}"
+          hub pr checkout "${{ github.event.issue.html_url }}"
+          git config --global user.name 'benchmark-update-bot'
+          git config --global user.email '<>'
+          git add testing.txt
+          git commit -m "Test change"
+          git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_NAME: ${{ github.event.issue.pull_request.head.ref }}
