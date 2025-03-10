@@ -30,7 +30,7 @@ jobs:
 
       - name: Make Changes
         run: |
-          swift package --package-path Benchmarks/ benchmark -allow-writing-to-package-directory benchmark --format metricP90AbsoluteThresholds thresholds update --path Benchmarks/Thresholds/nightly-next/
+          swift package --package-path Benchmarks/ -allow-writing-to-package-directory benchmark --format metricP90AbsoluteThresholds thresholds update --path Benchmarks/Thresholds/nightly-next/
 
       - name: Commit Changes
         run: |
