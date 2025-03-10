@@ -17,19 +17,19 @@ jobs:
 
       - name: Commit Changes
         run: |
-          echo "event.comment.body ${{ event.comment.body }}
-          echo "event.comment.issue_url ${{ event.comment.issue_url }}
-          echo "event.comment.id ${{ event.comment.id }}
-          echo "event.comment.url ${{ event.comment.url }}
-          echo "event.issue.comment.body ${{ event.issue.comment.body }}
-          echo "event.issue.html_url ${{ event.issue.html_url }}
-          echo "event.issue.id ${{ event.issue.id }}
-          echo "event.issue.number ${{ event.issue.number }}
-          echo "event.issue.pull_request.url ${{ event.issue.pull_request.url }}
-          echo "event.issue.pull_request.html_url ${{ event.issue.pull_request.html_url }}
-          echo "event.issue.repository_url ${{ event.issue.repository_url }}
-          echo "event.issue.url ${{ event.issue.url }}
-          echo "event.issue.pull_request.head.ref ${{ event.issue.pull_request.head.ref }}"
+          echo "event.comment.body ${{ github.event.comment.body }}
+          echo "event.comment.issue_url ${{ github.event.comment.issue_url }}
+          echo "event.comment.id ${{ github.event.comment.id }}
+          echo "event.comment.url ${{ github.event.comment.url }}
+          echo "event.issue.comment.body ${{ github.event.issue.comment.body }}
+          echo "event.issue.html_url ${{ github.event.issue.html_url }}
+          echo "event.issue.id ${{ github.event.issue.id }}
+          echo "event.issue.number ${{ github.event.issue.number }}
+          echo "event.issue.pull_request.url ${{ github.event.issue.pull_request.url }}
+          echo "event.issue.pull_request.html_url ${{ github.event.issue.pull_request.html_url }}
+          echo "event.issue.repository_url ${{ github.event.issue.repository_url }}
+          echo "event.issue.url ${{ github.event.issue.url }}
+          echo "event.issue.pull_request.head.ref ${{ github.event.issue.pull_request.head.ref }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_NAME: ${{ github.event.issue.pull_request.head.ref }}
