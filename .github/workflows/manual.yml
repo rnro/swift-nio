@@ -17,7 +17,6 @@ jobs:
 
       - name: Commit Changes
         run: |
-          echo "github.event.issue.pull_request.head.ref ${{ github.event.issue.pull_request.head.ref }}"
           echo "event.comment.body ${{ event.comment.body }}
           echo "event.comment.issue_url ${{ event.comment.issue_url }}
           echo "event.comment.id ${{ event.comment.id }}
@@ -30,6 +29,7 @@ jobs:
           echo "event.issue.pull_request.html_url ${{ event.issue.pull_request.html_url }}
           echo "event.issue.repository_url ${{ event.issue.repository_url }}
           echo "event.issue.url ${{ event.issue.url }}
+          echo "event.issue.pull_request.head.ref ${{ event.issue.pull_request.head.ref }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_NAME: ${{ github.event.issue.pull_request.head.ref }}
