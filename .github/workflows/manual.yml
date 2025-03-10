@@ -9,6 +9,8 @@ jobs:
     runs-on: [ubuntu-latest]
     container:
       image: "swiftlang/swift:nightly-6.1-jammy"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Install dependencies
         run: |
@@ -32,5 +34,3 @@ jobs:
           git add Benchmarks/Thresholds/
           git commit -m "Update benchmark thresholds"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
