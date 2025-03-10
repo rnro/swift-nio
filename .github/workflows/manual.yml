@@ -10,6 +10,10 @@ jobs:
     container:
       image: "swiftlang/swift:nightly-6.1-jammy"
     steps:
+      - name: Install dependencies
+        run: |
+          apt-get update -y -q && apt-get install -y -q libjemalloc-dev gh
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -21,7 +25,6 @@ jobs:
 
       - name: Make Changes
         run: |
-          apt-get update -y -q && apt-get install -y -q libjemalloc-dev
           swift package --package-path Benchmarks/ benchmark -allow-writing-to-package-directory benchmark --format metricP90AbsoluteThresholds thresholds update --path Benchmarks/Thresholds/nightly-next/
 
       - name: Commit Changes
