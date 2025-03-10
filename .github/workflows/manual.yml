@@ -11,18 +11,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout branch
+        run: |
+          hub pr checkout "${{ github.event.issue.html_url }}"
+          git config --global user.name 'benchmark-update-bot'
+          git config --global user.email '<>'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Make Changes
         run: |
           echo "a testing change" >> testing.txt
 
       - name: Commit Changes
         run: |
-          gh pr checkout "${{ github.event.issue.html_url }}"
-          git config --global user.name 'benchmark-update-bot'
-          git config --global user.email '<>'
           git add testing.txt
           git commit -m "Test change"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: ${{ github.event.issue.pull_request.head.ref }}
