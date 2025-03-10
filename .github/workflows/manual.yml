@@ -21,6 +21,7 @@ jobs:
           git config --global user.email '<>'
           git add testing.txt
           git commit -m "Test change"
-          git push
+          git push origin ${BRANCH_NAME}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
