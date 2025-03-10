@@ -17,7 +17,7 @@ jobs:
 
       - name: Commit Changes
         run: |
-          hub pr checkout "${{ github.event.issue.html_url }}"
+          gh pr checkout "${{ github.event.issue.html_url }}"
           git config --global user.name 'benchmark-update-bot'
           git config --global user.email '<>'
           git add testing.txt
