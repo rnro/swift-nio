@@ -10,6 +10,9 @@ on:
       swift_package_arguments:
         type: string
         description: "Arguments to the switch package command invocation e.g. `--disable-sandbox`"
+      issue_url:
+        type: string
+        description: "URL to a GitHub issue/PR on which to comment regarding activity of this workflow"
       linux_5_9_enabled:
         type: boolean
         description: "Boolean to enable the Linux 5.9 Swift version matrix job. Defaults to true."
@@ -65,6 +68,14 @@ jobs:
     env:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - name: Comment on issue
+        if: matrix.config.enabled && inputs.issue_url
+        run: |
+          COMMENT="Running benchmarks update"
+          curl -s -H "Authorization: token ${GITHUB_TOKEN}" -X POST "${COMMENTS_URL}" -d "{\"body\":\"$COMMENT\"}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENTS_URL: "${{ inputs.issue_url }}/comments"
       - name: Install dependencies
         if: ${{ matrix.config.enabled }}
         run: |
