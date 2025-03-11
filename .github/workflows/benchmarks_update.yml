@@ -119,4 +119,10 @@ jobs:
         run: |
           git add Benchmarks/Thresholds/
           git commit -m "Update benchmark thresholds (${SWIFT_VERSION})"
-          git push
+
+          # Different jobs can race to push their commits
+          retries=5
+          while (( retries-- > 0 )); do
+            [[ $(git push && git pull -r) == 0 ]] && exit
+            sleep $((1 + $RANDOM % 5))
+          done
