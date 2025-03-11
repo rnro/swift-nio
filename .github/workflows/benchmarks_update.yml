@@ -121,7 +121,7 @@ jobs:
           git add Benchmarks/Thresholds/
           if [ -z "$(git status --untracked-files=no --porcelain)" ]; then
             echo "Nothing to commit" && return 0
-          if
+          fi
           git commit -m "Update benchmark thresholds (${SWIFT_VERSION})"
 
           # Different jobs can race to push their commits
