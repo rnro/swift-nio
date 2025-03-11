@@ -118,17 +118,18 @@ jobs:
         env:
           SWIFT_VERSION: ${{ matrix.config.swift_version }}
         run: |
-          if [ -z "$(git status --untracked-files=no --porcelain)" ]; then
-            exit
-          if
           git add Benchmarks/Thresholds/
+          if [ -z "$(git status --untracked-files=no --porcelain)" ]; then
+            echo "Nothing to commit" && return 0
+          if
           git commit -m "Update benchmark thresholds (${SWIFT_VERSION})"
 
           # Different jobs can race to push their commits
           retries=5
           while (( $retries > 0 )); do
-            [[ $(git push && git pull -r) == 0 ]] && exit
+            echo "Pushing commits (retries remaining: $retries)"
+            [[ $(git push && git pull -r) == 0 ]] && return 0
             sleep $((1 + $RANDOM % 5))
             : $((--retries))
           done
-          exit 1
+          return 1
