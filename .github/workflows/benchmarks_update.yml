@@ -131,7 +131,7 @@ jobs:
             if [[ $(git push && git pull -r) == 0 ]]; then
               echo "Successfully pushed" && exit 0
             fi
-            sleep $((1 + $RANDOM % 5))
+            sleep 3
             : $((--retries))
           done
           exit 1
