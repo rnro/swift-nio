@@ -46,7 +46,7 @@ jobs:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Comment on issue
-        if: matrix.config.enabled && inputs.issue_url
+        if: inputs.issue_url
         run: |
           COMMENT="Attempting to update benchmark thresholds"
           curl -s -H "Authorization: token ${GITHUB_TOKEN}" -X POST "${COMMENTS_URL}" -d "{\"body\":\"$COMMENT\"}"
@@ -80,14 +80,6 @@ jobs:
     env:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Comment on issue
-        if: matrix.config.enabled && inputs.issue_url
-        run: |
-          COMMENT="Attempting to update benchmark thresholds"
-          curl -s -H "Authorization: token ${GITHUB_TOKEN}" -X POST "${COMMENTS_URL}" -d "{\"body\":\"$COMMENT\"}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMENTS_URL: "${{ inputs.issue_url }}/comments"
       - name: Install dependencies
         if: ${{ matrix.config.enabled }}
         run: |
