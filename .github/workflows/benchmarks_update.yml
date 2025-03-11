@@ -43,7 +43,8 @@ jobs:
   pr-comment:
     runs-on: "ubuntu-latest"
     env:
-       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      COMMENTS_URL: "${{ inputs.issue_url }}/comments"
     steps:
       - name: Comment on issue
         if: inputs.issue_url
