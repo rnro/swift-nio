@@ -120,16 +120,16 @@ jobs:
         run: |
           git add Benchmarks/Thresholds/
           if [ -z "$(git status --untracked-files=no --porcelain)" ]; then
-            echo "Nothing to commit" && return 0
+            echo "Nothing to commit" && exit 0
           fi
           git commit -m "Update benchmark thresholds (${SWIFT_VERSION})"
 
           # Different jobs can race to push their commits
           retries=5
-          while (( $retries > 0 )); do
+          while [ $retries -gt 0 ]; do
             echo "Pushing commits (retries remaining: $retries)"
-            [[ $(git push && git pull -r) == 0 ]] && return 0
+            [[ $(git push && git pull -r) == 0 ]] && exit 0
             sleep $((1 + $RANDOM % 5))
             : $((--retries))
           done
-          return 1
+          exit 1
