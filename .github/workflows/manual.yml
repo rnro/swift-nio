@@ -4,36 +4,8 @@ on:
     types: [created, edited]
 
 jobs:
-  update-benchmarks:
-    # if: ${{ github.event.issue.pull_request && contains(['COLLABORATOR', 'MEMBER', 'OWNER'], github.event.issue.author_association) && startsWith(github.event.issue.comment.body, "/update_benchmarks"}}
-    runs-on: [ubuntu-latest]
-    container:
-      image: "swiftlang/swift:nightly-6.1-jammy"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - name: Install dependencies
-        run: |
-          apt-get update -y -q && apt-get install -y -q libjemalloc-dev gh
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Mark the workspace as safe
-        run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - name: Checkout branch
-        run: |
-          gh pr checkout "${{ github.event.issue.html_url }}"
-          git config --global user.name 'benchmark-update-bot'
-          git config --global user.email '<>'
-
-      - name: Make Changes
-        run: |
-          swift package --package-path Benchmarks/ --allow-writing-to-package-directory benchmark --format metricP90AbsoluteThresholds thresholds update --path Benchmarks/Thresholds/nightly-next/
-
-      - name: Commit Changes
-        run: |
-          git add Benchmarks/Thresholds/
-          git commit -m "Update benchmark thresholds"
-          git push
+  benchmarks:
+    name: Update Benchmarks
+    uses: ./.github/workflows/benchmarks.yml
+    with:
+      benchmark_package_path: "Benchmarks"
