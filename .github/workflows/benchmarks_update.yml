@@ -62,6 +62,8 @@ jobs:
             enabled: ${{ inputs.linux_nightly_main_enabled }}
     container:
       image: ${{ matrix.config.image }}
+    env:
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Install dependencies
         if: ${{ matrix.config.enabled }}
