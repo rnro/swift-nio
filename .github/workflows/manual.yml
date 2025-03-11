@@ -22,4 +22,4 @@ jobs:
           curl -s -H "Authorization: token ${GITHUB_TOKEN}" -X POST "${COMMENTS_URL}" -d "{\"body\":\"$COMMENT\"}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMENTS_URL: "${{ event.comment.issue_url }}/comments"
+          COMMENTS_URL: "${{ github.event.comment.issue_url }}/comments"
