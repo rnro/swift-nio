@@ -137,8 +137,3 @@ jobs:
             retries=$(( $retries - 1 ))
           done
           exit 1
-
-  benchmarks:
-    name: Benchmarks
-    needs: update-benchmarks
-    uses: ./.github/workflows/benchmarks.yml
