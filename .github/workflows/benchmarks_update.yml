@@ -129,10 +129,11 @@ jobs:
           retries=5
           while [ $retries -gt 0 ]; do
             echo "Pushing commits (retries remaining: $retries)"
-            if $(echo "fake failure"; exit 1); then
-            # if $(git push && git pull -r); then
-              echo "Successfully pushed" && exit 0
+            if output=$( echo "fake failure"; exit 1 ); then
+            # if output=$(git push && git pull -r); then
+              echo "Successfully pushed: ${output}" && exit 0
             fi
+            echo "Push failed: ${output}"
             sleep 3
             retries=$(( $retries - 1 ))
           done
