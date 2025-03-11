@@ -41,6 +41,7 @@ concurrency:
 
 jobs:
   pr-comment:
+    name: PR comment
     runs-on: "ubuntu-latest"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -117,12 +118,17 @@ jobs:
         env:
           SWIFT_VERSION: ${{ matrix.config.swift_version }}
         run: |
+          if [ -z "$(git status --untracked-files=no --porcelain)" ]; then
+            exit
+          if
           git add Benchmarks/Thresholds/
           git commit -m "Update benchmark thresholds (${SWIFT_VERSION})"
 
           # Different jobs can race to push their commits
           retries=5
-          while (( retries-- > 0 )); do
+          while (( $retries > 0 )); do
             [[ $(git push && git pull -r) == 0 ]] && exit
             sleep $((1 + $RANDOM % 5))
+            : $((--retries))
           done
+          exit 1
