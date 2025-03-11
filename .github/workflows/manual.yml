@@ -1,11 +1,13 @@
-name: Manual
+name: Issue Comment
 on:
   issue_comment:
     types: [created, edited]
 
 jobs:
   benchmarks:
+    if: ${{ github.event.issue.pull_request && contains(['COLLABORATOR', 'MEMBER', 'OWNER'], github.event.issue.author_association) && startsWith(github.event.issue.comment.body, "/action update benchmarks"}}
     name: Update Benchmarks
-    uses: ./.github/workflows/benchmarks_update.yml
+    # Workaround https://github.com/nektos/act/issues/1875
+    uses: rnro/swift-nio/.github/workflows/benchmarks_update.yml@main
     with:
       benchmark_package_path: "Benchmarks"
