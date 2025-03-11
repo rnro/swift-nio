@@ -111,8 +111,7 @@ jobs:
           BENCHMARK_PACKAGE_PATH: ${{ inputs.benchmark_package_path }}
           SWIFT_PACKAGE_ARGUMENTS: ${{ inputs.swift_package_arguments }}
         run: |
-            touch Benchmarks/Thresholds/foo
-      #     swift package --package-path "${BENCHMARK_PACKAGE_PATH}" ${SWIFT_PACKAGE_ARGUMENTS} --allow-writing-to-package-directory benchmark --format metricP90AbsoluteThresholds thresholds update --path "${BENCHMARK_PACKAGE_PATH}/Thresholds/${SWIFT_VERSION}/"
+          swift package --package-path "${BENCHMARK_PACKAGE_PATH}" ${SWIFT_PACKAGE_ARGUMENTS} --allow-writing-to-package-directory benchmark --format metricP90AbsoluteThresholds thresholds update --path "${BENCHMARK_PACKAGE_PATH}/Thresholds/${SWIFT_VERSION}/"
 
       - name: Commit Changes
         if: ${{ matrix.config.enabled }}
@@ -129,8 +128,7 @@ jobs:
           retries=5
           while [ $retries -gt 0 ]; do
             echo "Pushing commits (retries remaining: $retries)"
-            if output=$( echo "fake failure"; exit 1 ); then
-            # if output=$(git push && git pull -r); then
+            if output=$(git push && git pull -r); then
               echo "Successfully pushed: ${output}" && exit 0
             fi
             echo "Push failed: ${output}"
