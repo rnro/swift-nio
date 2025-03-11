@@ -6,6 +6,6 @@ on:
 jobs:
   benchmarks:
     name: Update Benchmarks
-    uses: ./.github/workflows/benchmarks.yml
+    uses: ./.github/workflows/benchmarks_update.yml
     with:
       benchmark_package_path: "Benchmarks"
