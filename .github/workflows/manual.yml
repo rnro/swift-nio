@@ -11,15 +11,4 @@ jobs:
     uses: rnro/swift-nio/.github/workflows/benchmarks_update.yml@main
     with:
       benchmark_package_path: "Benchmarks"
-
-  test:
-    runs-on: "ubuntu-latest"
-    if: github.event.issue.pull_request && contains(fromJson('["COLLABORATOR","MEMBER","OWNER"]'), github.event.issue.author_association) && startsWith(github.event.comment.body, '/action test')
-    steps:
-      - name: Print event fields
-        run: |
-          COMMENT="Running benchmarks update"
-          curl -s -H "Authorization: token ${GITHUB_TOKEN}" -X POST "${COMMENTS_URL}" -d "{\"body\":\"$COMMENT\"}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMENTS_URL: "${{ github.event.comment.issue_url }}/comments"
+      issue_url: ${{ github.event.comment.issue_url }}
