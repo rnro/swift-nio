@@ -141,8 +141,4 @@ jobs:
   benchmarks:
     name: Benchmarks
     needs: update-benchmarks
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/benchmarks.yml@main
-    with:
-      benchmark_package_path: ${{ inputs.benchmark_package_path }}
-      swift_package_arguments: ${{ inputs.swift_package_arguments }}
+    uses: ./.github/workflows/benchmarks.yml
