@@ -104,14 +104,14 @@ jobs:
           git config --global user.name 'benchmark-update-bot'
           git config --global user.email '<>'
 
-      - name: Make Changes
-        if: ${{ matrix.config.enabled }}
-        env:
-          SWIFT_VERSION: ${{ matrix.config.swift_version }}
-          BENCHMARK_PACKAGE_PATH: ${{ inputs.benchmark_package_path }}
-          SWIFT_PACKAGE_ARGUMENTS: ${{ inputs.swift_package_arguments }}
-        run: |
-          swift package --package-path "${BENCHMARK_PACKAGE_PATH}" ${SWIFT_PACKAGE_ARGUMENTS} --allow-writing-to-package-directory benchmark --format metricP90AbsoluteThresholds thresholds update --path "${BENCHMARK_PACKAGE_PATH}/Thresholds/${SWIFT_VERSION}/"
+      # - name: Make Changes
+      #   if: ${{ matrix.config.enabled }}
+      #   env:
+      #     SWIFT_VERSION: ${{ matrix.config.swift_version }}
+      #     BENCHMARK_PACKAGE_PATH: ${{ inputs.benchmark_package_path }}
+      #     SWIFT_PACKAGE_ARGUMENTS: ${{ inputs.swift_package_arguments }}
+      #   run: |
+      #     swift package --package-path "${BENCHMARK_PACKAGE_PATH}" ${SWIFT_PACKAGE_ARGUMENTS} --allow-writing-to-package-directory benchmark --format metricP90AbsoluteThresholds thresholds update --path "${BENCHMARK_PACKAGE_PATH}/Thresholds/${SWIFT_VERSION}/"
 
       - name: Commit Changes
         if: ${{ matrix.config.enabled }}
@@ -128,10 +128,11 @@ jobs:
           retries=5
           while [ $retries -gt 0 ]; do
             echo "Pushing commits (retries remaining: $retries)"
-            if $(git push && git pull -r); then
+            if $(echo "fake failure"; exit 1); then
+            # if $(git push && git pull -r); then
               echo "Successfully pushed" && exit 0
             fi
             sleep 3
-            : $((--retries))
+            retries=$(( $retries - 1 ))
           done
           exit 1
