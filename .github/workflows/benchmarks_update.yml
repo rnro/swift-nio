@@ -91,8 +91,8 @@ jobs:
         if: ${{ matrix.config.enabled }}
         env:
           SWIFT_VERSION: ${{ matrix.config.swift_version }}
-          BENCHMARK_PACKAGE_PATH: ${{ matrix.config.benchmark_package_path }}
-          SWIFT_PACKAGE_ARGUMENTS: ${{ matrix.config.swift_package_arguments }}
+          BENCHMARK_PACKAGE_PATH: ${{ inputs.benchmark_package_path }}
+          SWIFT_PACKAGE_ARGUMENTS: ${{ inputs.swift_package_arguments }}
         run: |
           swift package --package-path "${BENCHMARK_PACKAGE_PATH}" ${SWIFT_PACKAGE_ARGUMENTS} benchmark --allow-writing-to-package-directory --format metricP90AbsoluteThresholds thresholds update --path "${BENCHMARK_PACKAGE_PATH}/Thresholds/${SWIFT_VERSION}/"
 
