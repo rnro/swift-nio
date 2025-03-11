@@ -1,0 +1,104 @@
+name: Benchmarks update
+
+on:
+  workflow_call:
+    inputs:
+      benchmark_package_path:
+        type: string
+        description: "Path to the directory containing the benchmarking package. Defaults to ."
+        default: "."
+      swift_package_arguments:
+        type: string
+        description: "Arguments to the switch package command invocation e.g. `--disable-sandbox`"
+      linux_5_9_enabled:
+        type: boolean
+        description: "Boolean to enable the Linux 5.9 Swift version matrix job. Defaults to true."
+        default: true
+      linux_5_10_enabled:
+        type: boolean
+        description: "Boolean to enable the Linux 5.10 Swift version matrix job. Defaults to true."
+        default: true
+      linux_6_0_enabled:
+        type: boolean
+        description: "Boolean to enable the Linux 6.0 Swift version matrix job. Defaults to true."
+        default: true
+      linux_nightly_next_enabled:
+        type: boolean
+        description: "Boolean to enable the Linux nightly matrix job for the next Swift version. Defaults to true."
+        default: true
+      linux_nightly_main_enabled:
+        type: boolean
+        description: "Boolean to enable the Linux nightly main Swift version matrix job. Defaults to true."
+        default: true
+
+# We will cancel previously-triggered workflow runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-benchmarks_update
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux (${{ matrix.config.swift_version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # We specify only the major and minor of the docker images to automatically pick up the latest patch releases
+        config:
+          - image: "swift:5.9-jammy"
+            swift_version: "5.9"
+            enabled: ${{ inputs.linux_5_9_enabled }}
+          - image: "swift:5.10-jammy"
+            swift_version: "5.10"
+            enabled: ${{ inputs.linux_5_10_enabled }}
+          - image: "swift:6.0-jammy"
+            swift_version: "6.0"
+            enabled: ${{ inputs.linux_6_0_enabled }}
+          - image: "swiftlang/swift:nightly-6.0-jammy"
+            swift_version: "nightly-next"
+            enabled: ${{ inputs.linux_nightly_next_enabled }}
+          - image: "swiftlang/swift:nightly-6.1-jammy"
+            swift_version: "nightly-main"
+            enabled: ${{ inputs.linux_nightly_main_enabled }}
+    container:
+      image: ${{ matrix.config.image }}
+    steps:
+      - name: Install dependencies
+        if: ${{ matrix.config.enabled }}
+        run: |
+          apt-get update -y -q && apt-get install -y -q libjemalloc-dev gh
+
+      - name: Mark the workspace as safe
+        if: ${{ matrix.config.enabled }}
+        run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Checkout repository
+        if: ${{ matrix.config.enabled }}
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Checkout branch
+        if: ${{ matrix.config.enabled }}
+        run: |
+          gh pr checkout "${{ github.event.issue.html_url }}"
+          git config --global user.name 'benchmark-update-bot'
+          git config --global user.email '<>'
+
+      - name: Make Changes
+        if: ${{ matrix.config.enabled }}
+        env:
+          SWIFT_VERSION: ${{ matrix.config.swift_version }}
+          BENCHMARK_PACKAGE_PATH: ${{ matrix.config.benchmark_package_path }}
+          SWIFT_PACKAGE_ARGUMENTS: ${{ matrix.config.swift_package_arguments }}
+        run: |
+          swift package --package-path "${BENCHMARK_PACKAGE_PATH}" "${SWIFT_PACKAGE_ARGUMENTS}" benchmark --allow-writing-to-package-directory --format metricP90AbsoluteThresholds thresholds update --path "${BENCHMARK_PACKAGE_PATH}/Thresholds/${SWIFT_VERSION}/"
+
+      - name: Commit Changes
+        if: ${{ matrix.config.enabled }}
+        env:
+          SWIFT_VERSION: ${{ matrix.config.swift_version }}
+        run: |
+          git add Benchmarks/Thresholds/
+          git commit -m "Update benchmark thresholds (${SWIFT_VERSION})"
+          git push
