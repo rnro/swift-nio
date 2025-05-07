@@ -363,7 +363,8 @@ let package = Package(
                 "NIOHTTP1",
                 "NIOWebSocket",
             ],
-            exclude: ["README.md"]
+            exclude: ["README.md"],
+            swiftSettings: strictConcurrencySettings
         ),
         .executableTarget(
             name: "NIOWebSocketClient",
@@ -373,7 +374,8 @@ let package = Package(
                 "NIOHTTP1",
                 "NIOWebSocket",
             ],
-            exclude: ["README.md"]
+            exclude: ["README.md"],
+            swiftSettings: strictConcurrencySettings
         ),
         .executableTarget(
             name: "NIOMulticastChat",
@@ -407,7 +409,8 @@ let package = Package(
                 "NIOPosix",
                 "NIOCore",
                 "NIOHTTP1",
-            ]
+            ],
+            swiftSettings: strictConcurrencySettings
         ),
 
         // MARK: - Tests
@@ -421,7 +424,8 @@ let package = Package(
                 "NIOHTTP1",
                 "NIOFoundationCompat",
                 "NIOWebSocket",
-            ]
+            ],
+            swiftSettings: strictConcurrencySettings
         ),
         .executableTarget(
             name: "NIOCrashTester",
@@ -432,7 +436,8 @@ let package = Package(
                 "NIOHTTP1",
                 "NIOWebSocket",
                 "NIOFoundationCompat",
-            ]
+            ],
+            swiftSettings: strictConcurrencySettings
         ),
         .testTarget(
             name: "NIOCoreTests",
@@ -466,7 +471,8 @@ let package = Package(
                 "CNIOLinux",
                 "CNIODarwin",
                 "NIOTLS",
-            ]
+            ],
+            swiftSettings: strictConcurrencySettings
         ),
         .testTarget(
             name: "NIOConcurrencyHelpersTests",
@@ -495,7 +501,8 @@ let package = Package(
                 "NIOHTTP1",
                 "NIOFoundationCompat",
                 "NIOTestUtils",
-            ]
+            ],
+            swiftSettings: strictConcurrencySettings
         ),
         .testTarget(
             name: "NIOTLSTests",
@@ -505,7 +512,8 @@ let package = Package(
                 "NIOTLS",
                 "NIOFoundationCompat",
                 "NIOTestUtils",
-            ]
+            ],
+            swiftSettings: strictConcurrencySettings
         ),
         .testTarget(
             name: "NIOWebSocketTests",
@@ -513,7 +521,8 @@ let package = Package(
                 "NIOCore",
                 "NIOEmbedded",
                 "NIOWebSocket",
-            ]
+            ],
+            swiftSettings: strictConcurrencySettings
         ),
         .testTarget(
             name: "NIOTestUtilsTests",
@@ -522,7 +531,8 @@ let package = Package(
                 "NIOCore",
                 "NIOEmbedded",
                 "NIOPosix",
-            ]
+            ],
+            swiftSettings: strictConcurrencySettings
         ),
         .testTarget(
             name: "NIOFoundationCompatTests",
