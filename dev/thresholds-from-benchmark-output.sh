@@ -36,7 +36,10 @@ YQ_BIN="${YQ_BIN:-$(which yq)}" || fatal "YQ_BIN unset and no yq on PATH"
 fetch_checks_for_pr() {
     pr_url=$1
 
-    "$GH_BIN" pr checks "$pr_url" | grep Benchmarks | grep -v Construct
+    # Exclude the job that builds the matrix rather than running a benchmark. It
+    # is named "Construct ..." by the old workflows and "Generate ... matrix" by
+    # the unified ones, and matches `grep Benchmarks` through its caller's name.
+    "$GH_BIN" pr checks "$pr_url" | grep Benchmarks | grep -vE 'Construct|Generate'
 }
 
 parse_url() {
@@ -99,7 +102,7 @@ fetch_checks_for_workflow() {
     repo=$1
     run=$2
 
-    "$GH_BIN" --repo "$repo" run view "$run" | grep Benchmarks | grep ID | grep -v Construct
+    "$GH_BIN" --repo "$repo" run view "$run" | grep Benchmarks | grep ID | grep -vE 'Construct|Generate'
 }
 
 fetch_check_logs() {

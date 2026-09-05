@@ -16,58 +16,112 @@ jobs:
       # Workaround https://github.com/swiftlang/swift-docc/issues/1280
       docs_check_container_image: "swift:6.1-noble"
 
-  unit-tests:
-    name: Unit tests
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/unit_tests.yml@main
+  tests:
+    name: Tests
+    uses: rnro/github-workflows/.github/workflows/package_test.yml@unification
     with:
-      linux_6_1_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_6_2_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_6_3_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_nightly_next_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_nightly_main_arguments_override: "--explicit-target-dependency-import-check error"
+      # A fork's default branch does not carry the change, so the ref is named.
+      # A released version needs neither input.
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
+      # Named because a concurrency group is keyed on it, and this workflow calls
+      # the reusable workflows more than once.
+      name: tests
+
+      # Linux. The default version list is 6.1 through 6.3 plus both nightlies,
+      # which is what unit_tests.yml enabled. Per-version arguments are one object
+      # rather than an input per version; a plain string is the argument list.
       linux_env_vars: '{"SWIFTNIO_CI": "1"}'
-      windows_6_3_enabled: true
-      windows_nightly_next_enabled: true
-      windows_nightly_main_enabled: true
+      linux_version_overrides: |
+        6.1: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
+        6.2: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
+        6.3: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
+        nightly-release: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
+        nightly-main: --explicit-target-dependency-import-check error
+
+      # Windows ran 6.3 and the two nightlies only.
+      windows_swift_versions: '["6.3", "nightly-release", "nightly-main"]'
+
+      # macOS. The two version lists combine, so the Xcode beta runs alongside the
+      # release toolchains, as macos_tests.yml's independent enable flags did.
+      # Builds only on a pull request; main.yml runs the simulator tests.
+      enable_macos: true
+      macos_repository_owner: apple
+      macos_runner_pool: general
+      macos_env_vars: '{"SWIFTNIO_CI": "1"}'
+      macos_swift_versions: '["6.1", "6.2", "6.3"]'
+      macos_xcode_versions: '["latest-beta"]'
+      xcode_scheme: swift-nio-Package
+      enable_macos_xcode_build: true
+      enable_ios_xcode_build: true
+      enable_watchos_xcode_build: true
+      enable_tvos_xcode_build: true
+      enable_visionos_xcode_build: true
+
+      # Job kinds that were a workflow each.
+      enable_cxx_interop: true
+      enable_linux_static_sdk_build: true
+      enable_wasm_sdk_build: true
+      wasm_sdk_build_command: "swift build --target NIOCore"
+      enable_android_sdk_build: true
 
   benchmarks:
     name: Benchmarks
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/benchmarks.yml@main
+    uses: rnro/github-workflows/.github/workflows/benchmarks.yml@unification
     with:
+      # A fork's default branch does not carry the change, so the ref is named.
+      # A released version needs neither input.
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
       benchmark_package_path: "Benchmarks"
 
-  cxx-interop:
-    name: Cxx interop
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/cxx_interop.yml@main
+  release-builds:
+    name: Release builds
+    uses: rnro/github-workflows/.github/workflows/release_build.yml@unification
+    with:
+      # A fork's default branch does not carry the change, so the ref is named.
+      # A released version needs neither input.
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
+      name: release-builds
+      enable_windows: true
+      windows_swift_versions: '["6.3", "nightly-release", "nightly-main"]'
 
-  construct-integration-test-matrix:
-    name: Construct integration test matrix
-    runs-on: ubuntu-latest
-    outputs:
-      integration-test-matrix: '${{ steps.generate-matrix.outputs.integration-test-matrix }}'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
-        with:
-          persist-credentials: false
-      - id: generate-matrix
-        run: echo "integration-test-matrix=$(curl -s --retry 3 https://raw.githubusercontent.com/apple/swift-nio/main/scripts/generate_matrix.sh | bash)" >> "$GITHUB_OUTPUT"
-        env:
-          MATRIX_LINUX_SETUP_COMMAND: "apt-get update -y -q && apt-get install -y -q lsof dnsutils netcat-openbsd net-tools curl jq"
-          MATRIX_LINUX_COMMAND: "./scripts/integration_tests.sh"
-          MATRIX_LINUX_ENV_VARS_JSON: '{"NIO_ALLOC_COUNTER_TESTS_PARALLEL": "true"}'
+  # Integration tests are not a job kind package_test.yml covers, so they pair the
+  # blessed toolchain axis with their own command rather than restating the
+  # platforms, runners and images.
+  integration-test-toolchains:
+    name: Integration test toolchains
+    uses: rnro/github-workflows/.github/workflows/toolchain_matrix.yml@unification
+    with:
+      # A fork's default branch does not carry the change, so the ref is named.
+      # A released version needs neither input.
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
+      enable_windows: false
+      linux_env_vars: '{"NIO_ALLOC_COUNTER_TESTS_PARALLEL": "true"}'
 
   integration-tests:
     name: Integration tests
-    needs: construct-integration-test-matrix
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/swift_test_matrix.yml@main
+    needs: integration-test-toolchains
+    uses: rnro/github-workflows/.github/workflows/execute_matrix.yml@unification
     with:
-      name: "Integration tests"
-      matrix_string: '${{ needs.construct-integration-test-matrix.outputs.integration-test-matrix }}'
+      # A fork's default branch does not carry the change, so the ref is named.
+      # A released version needs neither input.
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
+      name: integration-tests
+      matrix_yaml_string: ${{ needs.integration-test-toolchains.outputs.matrix_yaml }}
+      # The job runs unprivileged on the runner but as root in a container,
+      # where sudo is not installed. nightly-release is always containerised,
+      # because swiftly cannot install it, so both cases are reached.
+      setup_command: |
+        if command -v sudo >/dev/null 2>&1; then
+          sudo apt-get update -y -q && sudo apt-get install -y -q lsof dnsutils netcat-openbsd net-tools curl jq
+        else
+          apt-get update -y -q && apt-get install -y -q lsof dnsutils netcat-openbsd net-tools curl jq
+        fi
+      command: "./scripts/integration_tests.sh"
 
   vsock-tests:
     name: Vsock tests
@@ -86,33 +140,3 @@ jobs:
         run: swift test --filter "(?i)vsock" | tee test.out
       - name: Check for skipped tests
         run: test -r test.out && ! grep -i skipped test.out
-
-  macos-tests:
-    name: macOS tests
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/macos_tests.yml@main
-    with:
-      runner_pool: general
-      build_scheme: swift-nio-Package
-      env_vars: '{"SWIFTNIO_CI": "1"}'
-
-  static-sdk:
-    name: Static Linux Swift SDK
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/static_sdk.yml@main
-
-  wasm-sdk:
-    name: WebAssembly Swift SDK
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/wasm_swift_sdk.yml@main
-    with:
-      additional_command_arguments: "--target NIOCore"
-
-  android-sdk:
-    name: Android Swift SDK
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/android_swift_sdk.yml@main
-
-  release-builds:
-    name: Release builds
-    uses: apple/swift-nio/.github/workflows/release_builds.yml@main
