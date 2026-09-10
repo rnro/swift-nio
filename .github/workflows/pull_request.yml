@@ -20,17 +20,14 @@ jobs:
     name: Tests
     uses: rnro/github-workflows/.github/workflows/package_test.yml@unification
     with:
-      # A fork's default branch does not carry the change, so the ref is named.
-      # A released version needs neither input.
       workflows_repository: rnro/github-workflows
       workflows_ref: unification
       # Named because a concurrency group is keyed on it, and this workflow calls
       # the reusable workflows more than once.
       name: tests
 
-      # Linux. The default version list is 6.1 through 6.3 plus both nightlies,
-      # which is what unit_tests.yml enabled. Per-version arguments are one object
-      # rather than an input per version; a plain string is the argument list.
+      # Per-version arguments are one object rather than an input per version; a
+      # plain string is the argument list.
       linux_env_vars: '{"SWIFTNIO_CI": "1"}'
       linux_version_overrides: |
         6.1: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
@@ -39,38 +36,29 @@ jobs:
         nightly-release: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
         nightly-main: --explicit-target-dependency-import-check error
 
-      # Windows ran 6.3 and the two nightlies only.
       windows_swift_versions: '["6.3", "nightly-release", "nightly-main"]'
 
-      # macOS. The two version lists combine, so the Xcode beta runs alongside the
-      # release toolchains, as macos_tests.yml's independent enable flags did.
-      # Builds only on a pull request; main.yml runs the simulator tests.
+      # The two version lists combine, so the Xcode beta runs alongside the release
+      # toolchains. Builds only; main.yml runs the simulator tests.
       enable_macos: true
       macos_repository_owner: apple
-      macos_runner_pool: general
       macos_env_vars: '{"SWIFTNIO_CI": "1"}'
       macos_swift_versions: '["6.1", "6.2", "6.3"]'
       macos_xcode_versions: '["latest-beta"]'
       xcode_scheme: swift-nio-Package
-      enable_macos_xcode_build: true
-      enable_ios_xcode_build: true
-      enable_watchos_xcode_build: true
-      enable_tvos_xcode_build: true
-      enable_visionos_xcode_build: true
+      # A bare list takes every target's defaults: build, and do not test.
+      xcode_targets: '[macOS, iOS, watchOS, tvOS, visionOS]'
 
-      # Job kinds that were a workflow each.
       enable_cxx_interop: true
       enable_linux_static_sdk_build: true
       enable_wasm_sdk_build: true
-      wasm_sdk_build_command: "swift build --target NIOCore"
+      wasm_sdk_command: "swift build --target NIOCore"
       enable_android_sdk_build: true
 
   benchmarks:
     name: Benchmarks
     uses: rnro/github-workflows/.github/workflows/benchmarks.yml@unification
     with:
-      # A fork's default branch does not carry the change, so the ref is named.
-      # A released version needs neither input.
       workflows_repository: rnro/github-workflows
       workflows_ref: unification
       benchmark_package_path: "Benchmarks"
@@ -79,8 +67,6 @@ jobs:
     name: Release builds
     uses: rnro/github-workflows/.github/workflows/release_build.yml@unification
     with:
-      # A fork's default branch does not carry the change, so the ref is named.
-      # A released version needs neither input.
       workflows_repository: rnro/github-workflows
       workflows_ref: unification
       name: release-builds
@@ -94,8 +80,6 @@ jobs:
     name: Integration test toolchains
     uses: rnro/github-workflows/.github/workflows/toolchain_matrix.yml@unification
     with:
-      # A fork's default branch does not carry the change, so the ref is named.
-      # A released version needs neither input.
       workflows_repository: rnro/github-workflows
       workflows_ref: unification
       enable_windows: false
@@ -106,15 +90,12 @@ jobs:
     needs: integration-test-toolchains
     uses: rnro/github-workflows/.github/workflows/execute_matrix.yml@unification
     with:
-      # A fork's default branch does not carry the change, so the ref is named.
-      # A released version needs neither input.
       workflows_repository: rnro/github-workflows
       workflows_ref: unification
       name: integration-tests
       matrix_yaml_string: ${{ needs.integration-test-toolchains.outputs.matrix_yaml }}
       # The job runs unprivileged on the runner but as root in a container,
-      # where sudo is not installed. nightly-release is always containerised,
-      # because swiftly cannot install it, so both cases are reached.
+      # where sudo is not installed.
       setup_command: |
         if command -v sudo >/dev/null 2>&1; then
           sudo apt-get update -y -q && sudo apt-get install -y -q lsof dnsutils netcat-openbsd net-tools curl jq
