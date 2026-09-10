@@ -49,6 +49,12 @@ jobs:
       # A bare list takes every target's defaults: build, and do not test.
       xcode_targets: '[macOS, iOS, watchOS, tvOS, visionOS]'
 
+      linux_command: |
+        Debug-Test: swift test
+        Release-Build: swift build -c release
+      windows_command: |
+        Debug-Test: swift test
+        Release-Build: swift build -c release
       enable_cxx_interop: true
       enable_linux_static_sdk_build: true
       enable_wasm_sdk_build: true
@@ -62,16 +68,6 @@ jobs:
       workflows_repository: rnro/github-workflows
       workflows_ref: unification
       benchmark_package_path: "Benchmarks"
-
-  release-builds:
-    name: Release builds
-    uses: rnro/github-workflows/.github/workflows/release_build.yml@unification
-    with:
-      workflows_repository: rnro/github-workflows
-      workflows_ref: unification
-      name: release-builds
-      enable_windows: true
-      windows_swift_versions: '["6.3", "nightly-release", "nightly-main"]'
 
   # Integration tests are not a job kind package_test.yml covers, so they pair the
   # blessed toolchain axis with their own command rather than restating the
