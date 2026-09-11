@@ -98,10 +98,17 @@ for mode in debug release; do
             
             # expecting irrecoverable error as process should be terminated through fatalError/precondition/assert
             architecture=$(uname -m)
+            # Inside Docker, bash reports signal kills as 128+signal.
+            # On a native host, the raw signal number is returned.
+            if [[ -f /.dockerenv ]]; then
+                sig_offset=128
+            else
+                sig_offset=0
+            fi
             if [[ $architecture =~ ^(arm|aarch) ]]; then
-                assert_equal $exit_code $(( 128 + 5 )) # 5 == SIGTRAP aka trace trap, expected on ARM
+                assert_equal $exit_code $(( sig_offset + 5 )) # 5 == SIGTRAP aka trace trap, expected on ARM
             elif [[ $architecture =~ ^(x86|i386) ]]; then
-                assert_equal $exit_code $(( 128 + 4 ))  # 4 == SIGILL aka illegal instruction, expected on x86
+                assert_equal $exit_code $(( sig_offset + 4 ))  # 4 == SIGILL aka illegal instruction, expected on x86
             else
                 fail "unknown CPU architecture for which we don't know the expected signal for a crash"
             fi

@@ -10,89 +10,91 @@ on:
     - cron: "0 8,20 * * *"
 
 jobs:
-  unit-tests:
-    name: Unit tests
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/unit_tests.yml@main
+  tests:
+    name: Tests
+    uses: rnro/github-workflows/.github/workflows/package_test.yml@unification
     with:
-      linux_6_1_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_6_2_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_6_3_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_nightly_next_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_nightly_main_arguments_override: "--explicit-target-dependency-import-check error"
-      windows_6_3_enabled: true
-      windows_nightly_next_enabled: true
-      windows_nightly_main_enabled: true
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
+      # Named because a concurrency group is keyed on it, and this workflow calls
+      # the reusable workflows more than once.
+      name: tests
 
-  cxx-interop:
-    name: Cxx interop
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/cxx_interop.yml@main
+      # Per-version arguments are one object rather than an input per version; a
+      # plain string is the argument list.
+      linux_version_overrides: |
+        6.1: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
+        6.2: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
+        6.3: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
+        nightly-release: -Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error
+        nightly-main: --explicit-target-dependency-import-check error
+
+      # The two version lists combine, so the Xcode beta runs alongside the release
+      # toolchains. The macOS target is build-only pending an outstanding issue
+      # with running its tests.
+      enable_macos: true
+      macos_repository_owner: apple
+      macos_runner_pool: nightly
+      xcode_scheme: swift-nio-Package
+      macos_swift_versions: '["6.1", "6.2", "6.3"]'
+      macos_xcode_versions: '["latest-beta"]'
+      xcode_debug_output: true
+      # macOS names no test because its tests do not yet run; the rest ask for
+      # both, and asking to test implies building.
+      xcode_targets: |
+        macOS: {build: true}
+        iOS: {test: true}
+        watchOS: {test: true}
+        tvOS: {test: true}
+        visionOS: {test: true}
+
+      linux_command: |
+        Debug-Test: swift test
+        Release-Build: swift build -c release
+      windows_command: |
+        Debug-Test: swift test
+        Release-Build: swift build -c release
+      enable_cxx_interop: true
+      enable_linux_static_sdk_build: true
+      enable_wasm_sdk_build: true
+      wasm_sdk_command: "swift build --target NIOCore"
+      enable_android_sdk_build: true
 
   benchmarks:
     name: Benchmarks
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/benchmarks.yml@main
+    uses: rnro/github-workflows/.github/workflows/benchmarks.yml@unification
     with:
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
       benchmark_package_path: "Benchmarks"
 
-  construct-integration-test-matrix:
-    name: Construct integration test matrix
-    runs-on: ubuntu-latest
-    outputs:
-      integration-test-matrix: '${{ steps.generate-matrix.outputs.integration-test-matrix }}'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
-        with:
-          persist-credentials: false
-      - id: generate-matrix
-        run: echo "integration-test-matrix=$(curl -s --retry 3 https://raw.githubusercontent.com/apple/swift-nio/main/scripts/generate_matrix.sh | bash)" >> "$GITHUB_OUTPUT"
-        env:
-          MATRIX_LINUX_SETUP_COMMAND: "apt-get update -y -q && apt-get install -y -q lsof dnsutils netcat-openbsd net-tools curl jq"
-          MATRIX_LINUX_COMMAND: "./scripts/integration_tests.sh"
-          MATRIX_LINUX_ENV_VARS_JSON: '{"NIO_ALLOC_COUNTER_TESTS_PARALLEL": "true"}'
+  # Integration tests are not a job kind package_test.yml covers, so they pair the
+  # blessed toolchain axis with their own command rather than restating the
+  # platforms, runners and images.
+  integration-test-toolchains:
+    name: Integration test toolchains
+    uses: rnro/github-workflows/.github/workflows/toolchain_matrix.yml@unification
+    with:
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
+      enable_windows: false
+      linux_env_vars: '{"NIO_ALLOC_COUNTER_TESTS_PARALLEL": "true"}'
 
   integration-tests:
     name: Integration tests
-    needs: construct-integration-test-matrix
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/swift_test_matrix.yml@main
+    needs: integration-test-toolchains
+    uses: rnro/github-workflows/.github/workflows/execute_matrix.yml@unification
     with:
-      name: "Integration tests"
-      matrix_string: '${{ needs.construct-integration-test-matrix.outputs.integration-test-matrix }}'
-
-  static-sdk:
-    name: Static Linux Swift SDK
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/static_sdk.yml@main
-
-  wasm-sdk:
-    name: WebAssembly Swift SDK
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/wasm_swift_sdk.yml@main
-    with:
-      additional_command_arguments: "--target NIOCore"
-
-  android-sdk:
-    name: Android Swift SDK
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/android_swift_sdk.yml@main
-
-  macos-tests:
-    name: macOS tests
-    # Workaround https://github.com/nektos/act/issues/1875
-    uses: apple/swift-nio/.github/workflows/macos_tests.yml@main
-    with:
-      runner_pool: nightly
-      build_scheme: swift-nio-Package
-      debug_output_enabled: true
-      macos_xcode_test_enabled: false  # Disabled because of an issue
-      ios_xcode_test_enabled: true
-      watchos_xcode_test_enabled: true
-      tvos_xcode_test_enabled: true
-      visionos_xcode_test_enabled: true
-
-  release-builds:
-    name: Release builds
-    uses: apple/swift-nio/.github/workflows/release_builds.yml@main
+      workflows_repository: rnro/github-workflows
+      workflows_ref: unification
+      name: integration-tests
+      matrix_yaml_string: ${{ needs.integration-test-toolchains.outputs.matrix_yaml }}
+      # The job runs unprivileged on the runner but as root in a container,
+      # where sudo is not installed.
+      setup_command: |
+        if command -v sudo >/dev/null 2>&1; then
+          sudo apt-get update -y -q && sudo apt-get install -y -q lsof dnsutils netcat-openbsd net-tools curl jq
+        else
+          apt-get update -y -q && apt-get install -y -q lsof dnsutils netcat-openbsd net-tools curl jq
+        fi
+      command: "./scripts/integration_tests.sh"
