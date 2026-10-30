@@ -18,10 +18,8 @@ jobs:
 
   tests:
     name: Tests
-    uses: rnro/github-workflows/.github/workflows/package_test.yml@unification
+    uses: rnro/github-workflows/.github/workflows/package_test.yml@self-repo-reference
     with:
-      workflows_repository: rnro/github-workflows
-      workflows_ref: unification
       # Named because a concurrency group is keyed on it, and this workflow calls
       # the reusable workflows more than once.
       name: tests
@@ -62,10 +60,8 @@ jobs:
 
   benchmarks:
     name: Benchmarks
-    uses: rnro/github-workflows/.github/workflows/benchmarks.yml@unification
+    uses: rnro/github-workflows/.github/workflows/benchmarks.yml@self-repo-reference
     with:
-      workflows_repository: rnro/github-workflows
-      workflows_ref: unification
       benchmark_package_paths: '["Benchmarks"]'
       linux_swift_versions: *linux_swift_versions
 
@@ -74,10 +70,8 @@ jobs:
   # platforms, runners and images.
   integration-test-toolchains:
     name: Integration test toolchains
-    uses: rnro/github-workflows/.github/workflows/toolchain_matrix.yml@unification
+    uses: rnro/github-workflows/.github/workflows/toolchain_matrix.yml@self-repo-reference
     with:
-      workflows_repository: rnro/github-workflows
-      workflows_ref: unification
       enable_windows: false
       linux_swift_versions: *linux_swift_versions
       linux_env_vars: '{"NIO_ALLOC_COUNTER_TESTS_PARALLEL": "true"}'
@@ -85,10 +79,8 @@ jobs:
   integration-tests:
     name: Integration tests
     needs: integration-test-toolchains
-    uses: rnro/github-workflows/.github/workflows/execute_matrix.yml@unification
+    uses: rnro/github-workflows/.github/workflows/execute_matrix.yml@self-repo-reference
     with:
-      workflows_repository: rnro/github-workflows
-      workflows_ref: unification
       name: integration-tests
       matrix_yaml_string: ${{ needs.integration-test-toolchains.outputs.matrix_yaml }}
       # The job runs unprivileged on the runner but as root in a container,
