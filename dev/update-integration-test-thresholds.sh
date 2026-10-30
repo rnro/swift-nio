@@ -57,39 +57,25 @@ if [ ! -d "$THRESHOLDS_DIR" ]; then
     fatal "Thresholds directory not found at: $THRESHOLDS_DIR"
 fi
 
-# Map job name pattern to threshold file name
+# Map a check line to the threshold file it belongs to.
+#
+# Derived from the files present rather than a hardcoded list, so adding a Swift
+# version needs no edit here. Two job-name shapes are accepted: the unified
+# workflows emit "Linux Swift <version>", the older ones "... (<version>)".
+# Candidates are tried longest first so that nightly-6.1 cannot be taken for 6.1.
 map_version() {
     check_line=$1
 
-    case "$check_line" in
-        *"(5.8)"*)
-            echo "5.8"
-            ;;
-        *"(5.10)"*)
-            echo "5.10"
-            ;;
-        *"(6.0)"*)
-            echo "6.0"
-            ;;
-        *"(6.1)"*)
-            echo "6.1"
-            ;;
-        *"(6.2)"*)
-            echo "6.2"
-            ;;
-        *"(nightly-6.1)"*)
-            echo "nightly-6.1"
-            ;;
-        *"(nightly-next)"*)
-            echo "nightly-next"
-            ;;
-        *"(nightly-main)"*)
-            echo "nightly-main"
-            ;;
-        *)
-            return 1
-            ;;
-    esac
+    for threshold_file in $(find "$THRESHOLDS_DIR" -maxdepth 1 -name '*.json' | awk '{ print length, $0 }' | sort -rn | cut -d' ' -f2-); do
+        candidate=$(basename "$threshold_file" .json)
+        case "$check_line" in
+            *"Swift $candidate"*|*"($candidate)"*)
+                echo "$candidate"
+                return 0
+                ;;
+        esac
+    done
+    return 1
 }
 
 # Track whether any files were updated
